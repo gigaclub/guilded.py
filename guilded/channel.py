@@ -64,6 +64,8 @@ class ChannelType(Enum):
     docs = 'doc'
     thread = 'temporal'
     dm = 'DM'
+    announcement = 'announcement'
+    team_announcement = 'team_announcement'
 
 class ChatChannel(guilded.abc.TeamChannel):
     def __init__(self, **fields):
@@ -121,3 +123,13 @@ class DMChannel(guilded.abc.Messageable):
             author = self._state._get_user(message_data.get('createdBy'))
             message = self._state._get_message(message_data.get('id')) or Message(state=self._state, channel=self, data=message_data, author=author)
             self.last_message = message
+
+class AnnouncementChannel(guilded.abc.Messageable):
+    def __init__(self, *, state, data):
+        super().__init__(state=state, data=data)
+        self.type = ChannelType.announcement
+
+class TeamAnnouncementChannel(guilded.abc.TeamChannel):
+    def __init__(self, **fields):
+        super().__init__(**fields)
+        self.type = ChannelType.team_announcement
