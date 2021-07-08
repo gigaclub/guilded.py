@@ -55,7 +55,7 @@ import datetime
 from guilded.abc import TeamChannel
 
 from .asset import Asset
-from .channel import ChatChannel, Thread
+from .channel import AnnouncementChannel, ChatChannel, Thread
 from .errors import NotFound
 from .gateway import GuildedWebSocket
 from .user import Member
@@ -227,8 +227,11 @@ class Team:
         for channel in channels.get('channels', []):
             data = {**data, 'data': channel}
             try:
-                if channel.get('contentType') == 'chat':
+                channel_type = channel.get('contentType')
+                if channel_type == 'chat':
                     channel_obj = ChatChannel(**data)
+                elif channel_type == 'announcement':
+                    channel_obj = AnnouncementChannel(**data)
                 else:
                     channel_obj = TeamChannel(**data)
             except:

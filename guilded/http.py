@@ -352,6 +352,39 @@ class HTTPClient:
     def get_channel_messages(self, channel_id: str, *, limit: int):
         return self.request(Route('GET', f'/channels/{channel_id}/messages'), params={'limit': limit})
 
+    def post_announcement(self, channel_id: str, title: str, content, dont_send_notifications: bool):
+        route = Route('POST', f'/channels/{channel_id}/announcements')
+        payload = {
+            'title': title,
+            'content': {'object': 'value', 'document': {'object': 'document', 'data': {}, 'nodes': []}},
+            'dontSendNotifications': dont_send_notifications,
+        }
+
+        for node in content:
+            blank_node = {
+                'object': 'block',
+                'type': None,
+                'data': {},
+                'nodes': []
+            }
+            if isinstance(node, Embed):
+                blank_node['type'] = 'webhookMessage'
+                blank_node['data'] = {'embeds': [node.to_dict()]}
+
+            elif isinstance(node, File):
+                blank_node['type'] = node.file_type
+                blank_node['data'] = {'src': node.url}
+
+            else:
+                # stringify anything else, similar to prev. behavior
+                blank_node['type'] = 'markdown-plain-text'
+                blank_node['nodes'].append(
+                    {'object': 'text', 'leaves': [{'object': 'leaf', 'text': str(node), 'marks': []}]})
+
+            payload['content']['document']['nodes'].append(blank_node)
+
+        return self.request(route, json=payload), payload
+
     # /teams
 
     def join_team(self, team_id):
@@ -474,6 +507,38 @@ class HTTPClient:
 
     def restore_team_thread(self, team_id: str, group_id: str, thread_id: str):
         return self.request(Route('PUT', f'/teams/{team_id}/groups/{group_id or "undefined"}/channels/{thread_id}/restore'))
+
+    def post_team_announcement(self, team_id: str, title: str, content):
+        route = Route('POST', f'/teams/{team_id}/announcements')
+        payload = {
+            'title': title,
+            'content': {'object': 'value', 'document': {'object': 'document', 'data': {}, 'nodes': []}},
+        }
+
+        for node in content:
+            blank_node = {
+                'object': 'block',
+                'type': None,
+                'data': {},
+                'nodes': []
+            }
+            if isinstance(node, Embed):
+                blank_node['type'] = 'webhookMessage'
+                blank_node['data'] = {'embeds': [node.to_dict()]}
+
+            elif isinstance(node, File):
+                blank_node['type'] = node.file_type
+                blank_node['data'] = {'src': node.url}
+
+            else:
+                # stringify anything else, similar to prev. behavior
+                blank_node['type'] = 'markdown-plain-text'
+                blank_node['nodes'].append(
+                    {'object': 'text', 'leaves': [{'object': 'leaf', 'text': str(node), 'marks': []}]})
+
+            payload['content']['document']['nodes'].append(blank_node)
+
+        return self.request(route, json=payload), payload
 
     # /users
 
