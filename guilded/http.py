@@ -383,8 +383,6 @@ class HTTPClient:
 
             payload['content']['document']['nodes'].append(blank_node)
 
-            print(payload)
-
         return self.request(route, json=payload), payload
 
     # /teams
@@ -511,7 +509,6 @@ class HTTPClient:
         return self.request(Route('PUT', f'/teams/{team_id}/groups/{group_id or "undefined"}/channels/{thread_id}/restore'))
 
     def post_team_announcement(self, team_id: str, title: str, content):
-        print(team_id)
         route = Route('POST', f'/teams/{team_id}/announcements')
         payload = {
             'title': title,
@@ -540,9 +537,6 @@ class HTTPClient:
                     {'object': 'text', 'leaves': [{'object': 'leaf', 'text': str(node), 'marks': []}]})
 
             payload['content']['document']['nodes'].append(blank_node)
-
-            print(payload)
-            print(route)
 
         return self.request(route, json=payload), payload
 
